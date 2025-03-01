@@ -94,8 +94,8 @@ const Home: React.FC = () => {
 
     await axios
       .post("https://betterchat-backend.onrender.com/custom_character", characterData)
-      .then((res) => console.log(res.data))
-      .catch((err) => console.error("Error saving character:", err.response));
+      .then((res) => alert(res.data))
+      .catch((err) => alert("Error saving character:" + err.response));
 
     setCustomCharacter(newCharacter);
   };
@@ -161,11 +161,24 @@ const Home: React.FC = () => {
 
           <div className="bg-white p-4 rounded-lg shadow-md mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Create a Custom AI Character</h2>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              <input className="p-2 border rounded-lg" placeholder="Name" onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })} />
-              <input className="p-2 border rounded-lg" placeholder="Emoji" onChange={(e) => setNewCharacter({ ...newCharacter, emoji: e.target.value })} />
-              <input className="p-2 border rounded-lg" placeholder="Description" onChange={(e) => setNewCharacter({ ...newCharacter, description: e.target.value })} />
-            </div>
+            {/* Custom AI Character Inputs */}
+<div className="grid grid-cols-3 gap-2 mt-2">
+  <input
+    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+    placeholder="Name"
+    onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })}
+  />
+  <input
+    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+    placeholder="Emoji"
+    onChange={(e) => setNewCharacter({ ...newCharacter, emoji: e.target.value })}
+  />
+  <input
+    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+    placeholder="Description"
+    onChange={(e) => setNewCharacter({ ...newCharacter, description: e.target.value })}
+  />
+</div>
             <button onClick={saveCustomCharacter} className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg">
               Save Custom AI
             </button>
@@ -189,7 +202,10 @@ const Home: React.FC = () => {
           </div>
 
           <div className="flex">
-            <input className="w-full p-2 border rounded-lg" value={input} onChange={(e) => setInput(e.target.value)} />
+            <input className="w-full p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500" 
+            value={input} 
+            onChange={(e) => setInput(e.target.value)} 
+            placeholder="Type your message..." />
             <button className="ml-2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg" onClick={sendMessage}>
               Send
             </button>
