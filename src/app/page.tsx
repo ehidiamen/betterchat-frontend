@@ -1,101 +1,202 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db, provider, signInWithPopup, signOut } from "./firebase"; // Import Firebase auth
+
+// Define TypeScript interfaces
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface Character {
+  emoji: string;
+  name: string;
+}
+
+interface CustomCharacter {
+  name: string;
+  emoji: string;
+  description: string;
+}
+
+const AI_CHARACTERS: Record<string, Character> = {
+  wise_sage: { emoji: "🧙‍♂️", name: "Wise Sage" },
+  pirate_friend: { emoji: "🏴‍☠️", name: "Pirate Friend" },
+  afrobeat_musician: { emoji: "🎵", name: "Afrobeat Musician from Nigeria" },
+  custom: { emoji: "✨", name: "Custom AI" },
+};
+
+const Home: React.FC = () => {
+  const [user, setUser] = useState<any>(null); // Firebase user object
+  const [character, setCharacter] = useState<string>("wise_sage");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState<string>("");
+  const [customCharacter, setCustomCharacter] = useState<CustomCharacter | null>(null);
+  const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
+
+  // Google Sign-In
+  const signIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+    } catch (error) {
+      console.error("Login Error:", error);
+    }
+  };
+
+  // Google Sign-Out
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setMessages([]); // Clear messages on logout
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
+  };
+
+  // Load Chat History from Firebase
+  useEffect(() => {
+    if (user) {
+      const loadHistory = async () => {
+        const docRef = doc(db, "conversations", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setMessages(docSnap.data().messages as Message[]);
+        }
+      };
+      loadHistory();
+
+      // Load Custom AI Character
+      axios
+        .get(`https://betterchat-backend.onrender.com/custom_character/${user.uid}`)
+        .then((res) => setCustomCharacter(res.data))
+        .catch(() => setCustomCharacter(null));
+    }
+  }, [user]);
+
+  // Save Custom AI Character
+  const saveCustomCharacter = async () => {
+    if (!user) return;
+
+    const characterData = {
+      user_id: user.uid,
+      character_name: newCharacter.name,
+      emoji: newCharacter.emoji,
+      description: newCharacter.description,
+    };
+
+    console.log("Sending custom character data:", characterData); // Debugging
+
+    await axios
+      .post("https://betterchat-backend.onrender.com/custom_character", characterData)
+      .then((res) => console.log(res.data))
+      .catch((err) => console.error("Error saving character:", err.response));
+
+    setCustomCharacter(newCharacter);
+  };
+
+  // Send Message to FastAPI Backend
+  const sendMessage = async () => {
+    if (!input.trim() || !user) return;
+    const userMessage: Message = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+
+    const res = await axios.post("https://betterchat-backend.onrender.com/chat", {
+      user_id: user.uid, // Use Firebase UID as user_id
+      message: input,
+      character: character,
+    });
+
+    const botMessage: Message = { role: "assistant", content: res.data.response };
+    setMessages((prev) => [...prev, botMessage]);
+
+    await setDoc(doc(db, "conversations", user.uid), { messages: [...messages, userMessage, botMessage] });
+    setInput("");
+  };
+
+  const speak = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="max-w-3xl mx-auto p-6 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">
+        Better Chat {AI_CHARACTERS[character]?.emoji}
+      </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {!user ? (
+        <div className="flex justify-center">
+          <button onClick={signIn} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+            Sign in with Google
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ) : (
+        <>
+          <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-4">
+            <p className="text-gray-700">Welcome, {user.displayName || "User"}!</p>
+            <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+              Logout
+            </button>
+          </div>
+
+          <select className="w-full p-2 border rounded-lg mb-4" onChange={(e) => setCharacter(e.target.value)}>
+            {Object.entries(AI_CHARACTERS).map(([key, char]) => (
+              <option key={key} value={key}>
+                {char.emoji} {char.name}
+              </option>
+            ))}
+          </select>
+
+          {character === "custom" && customCharacter && (
+            <p className="text-gray-600 font-semibold text-center">
+              {customCharacter.emoji} {customCharacter.name} - {customCharacter.description}
+            </p>
+          )}
+
+          <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Create a Custom AI Character</h2>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              <input className="p-2 border rounded-lg" placeholder="Name" onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })} />
+              <input className="p-2 border rounded-lg" placeholder="Emoji" onChange={(e) => setNewCharacter({ ...newCharacter, emoji: e.target.value })} />
+              <input className="p-2 border rounded-lg" placeholder="Description" onChange={(e) => setNewCharacter({ ...newCharacter, description: e.target.value })} />
+            </div>
+            <button onClick={saveCustomCharacter} className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg">
+              Save Custom AI
+            </button>
+          </div>
+
+
+
+          <div className="bg-white p-4 rounded-lg shadow-md h-80 overflow-auto mb-4">
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`my-2 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <p className={`px-4 py-2 rounded-lg ${msg.role === "user" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"}`}>
+                  {msg.content}
+                </p>
+                {msg.role === "assistant" && (
+                  <button onClick={() => speak(msg.content)} className="ml-2 text-blue-500">
+                    🔊
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex">
+            <input className="w-full p-2 border rounded-lg" value={input} onChange={(e) => setInput(e.target.value)} />
+            <button className="ml-2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg" onClick={sendMessage}>
+              Send
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
-}
+};
+
+export default Home;
