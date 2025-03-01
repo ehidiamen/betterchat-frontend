@@ -145,9 +145,12 @@ const Home: React.FC = () => {
             </button>
           </div>
 
-          <select className="w-full p-2 border rounded-lg mb-4" onChange={(e) => setCharacter(e.target.value)}>
+          <select
+            className="w-full p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 bg-white focus:outline-none focus:border-blue-500"
+            onChange={(e) => setCharacter(e.target.value)}
+          >
             {Object.entries(AI_CHARACTERS).map(([key, char]) => (
-              <option key={key} value={key}>
+              <option key={key} value={key} className="text-gray-900">
                 {char.emoji} {char.name}
               </option>
             ))}
