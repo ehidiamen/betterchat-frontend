@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { User } from "firebase/auth"; 
 import { auth, db, provider, signInWithPopup, signOut } from "./firebase"; // Import Firebase auth
 
 // Define TypeScript interfaces
@@ -30,7 +31,7 @@ const AI_CHARACTERS: Record<string, Character> = {
 };
 
 const Home: React.FC = () => {
-  const [user, setUser] = useState<any>(null); // Firebase user object
+  const [user, setUser] = useState<User | null>(null);// Firebase user object
   const [character, setCharacter] = useState<string>("wise_sage");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
