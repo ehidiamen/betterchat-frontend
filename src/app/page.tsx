@@ -139,7 +139,7 @@ const Home: React.FC = () => {
         Better Chat {AI_CHARACTERS[character]?.emoji}
       </h1>
       <h1 className="text-1xl text-center text-gray-800 mb-4">
-        A fun conversational AI bot. Ask me anything!
+        Meet fun conversational AI bots. Ask them anything!
       </h1>
 
       {!user ? (
