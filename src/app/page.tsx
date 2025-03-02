@@ -6,11 +6,6 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth"; 
 import { auth, db, provider, signInWithPopup, signOut } from "./firebase"; // Import Firebase auth
 
-// Extend TypeScript's Window object to recognize SpeechRecognition
-interface Window {
-  SpeechRecognition: typeof SpeechRecognition;
-  webkitSpeechRecognition: typeof SpeechRecognition;
-}
 
 // Define TypeScript interfaces
 interface Message {
