@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth"; 
 import { auth, db, provider, signInWithPopup, signOut } from "./firebase"; // Import Firebase auth
+
+
 
 // Define TypeScript interfaces
 interface Message {
@@ -38,8 +40,8 @@ const Home: React.FC = () => {
   const [customCharacter, setCustomCharacter] = useState<CustomCharacter | null>(null);
   const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
   const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
-
-
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); // Create a reference
+  
   // Google Sign-In
   const signIn = async () => {
     try {
@@ -80,6 +82,13 @@ const Home: React.FC = () => {
         .catch(() => setCustomCharacter(null));
     }
   }, [user]);
+
+  // Scroll to the bottom when messages update
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Save Custom AI Character
   const saveCustomCharacter = async () => {
@@ -132,7 +141,7 @@ const Home: React.FC = () => {
         Better Chat {AI_CHARACTERS[character]?.emoji}
       </h1>
       <h1 className="text-1xl text-center text-gray-800 mb-4">
-        A fun conversational AI bot. Ask me anything!
+        Meet fun conversational AI bots. Ask them anything!
       </h1>
 
       {!user ? (
@@ -236,6 +245,8 @@ const Home: React.FC = () => {
                 )}
               </div>
             ))}
+            {/* Invisible div to force scroll to bottom */}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="flex">

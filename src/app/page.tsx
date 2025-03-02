@@ -6,6 +6,12 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth"; 
 import { auth, db, provider, signInWithPopup, signOut } from "./firebase"; // Import Firebase auth
 
+// Extend TypeScript's Window object to recognize SpeechRecognition
+interface Window {
+  SpeechRecognition: typeof SpeechRecognition;
+  webkitSpeechRecognition: typeof SpeechRecognition;
+}
+
 // Define TypeScript interfaces
 interface Message {
   role: "user" | "assistant";
@@ -39,8 +45,28 @@ const Home: React.FC = () => {
   const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
   const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // Create a reference
+  // Get the SpeechRecognition object, handling browser compatibility
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  // Define recognition variable with correct type
+  const recognition: SpeechRecognition | null = SpeechRecognition ? new SpeechRecognition() : null;
 
-  // Google Sign-In
+  // Speech recognition settings
+  if (recognition) {
+    recognition.continuous = false; // Stop listening after speaking
+    recognition.interimResults = false; // Only finalize speech when finished
+    recognition.lang = "en-US"; // Set language (change as needed)
+  }
+
+  const startListening = () => {
+    if (!recognition) {
+      alert("Speech recognition is not supported in this browser.");
+      return;
+    }
+  
+    recognition.start();
+  };
+
+  // Google Sign
   const signIn = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -87,6 +113,15 @@ const Home: React.FC = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (recognition) {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const speechText = event.results[0][0].transcript; // Get speech text
+        setInput(speechText); // Set input field value
+      };
+    }
+  }, []);
 
   // Save Custom AI Character
   const saveCustomCharacter = async () => {
@@ -251,7 +286,14 @@ const Home: React.FC = () => {
             <input className="w-full p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500" 
             value={input} 
             onChange={(e) => setInput(e.target.value)} 
-            placeholder="Type your message..." />
+            placeholder="Type or speak your message..." />
+            {/* 🎤 Microphone Button */}
+            <button 
+              className="ml-2 bg-gray-500 hover:bg-gray-600 text-white p-3 rounded-lg"
+              onClick={startListening}
+            >
+              🎤
+            </button>
             <button className="ml-2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg" onClick={sendMessage}>
               Send
             </button>
