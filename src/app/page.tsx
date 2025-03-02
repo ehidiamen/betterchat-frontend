@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { User } from "firebase/auth"; 
@@ -38,7 +38,7 @@ const Home: React.FC = () => {
   const [customCharacter, setCustomCharacter] = useState<CustomCharacter | null>(null);
   const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
   const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
-
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); // Create a reference
 
   // Google Sign-In
   const signIn = async () => {
@@ -80,6 +80,13 @@ const Home: React.FC = () => {
         .catch(() => setCustomCharacter(null));
     }
   }, [user]);
+
+  // Scroll to the bottom when messages update
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Save Custom AI Character
   const saveCustomCharacter = async () => {
@@ -236,6 +243,8 @@ const Home: React.FC = () => {
                 )}
               </div>
             ))}
+            {/* Invisible div to force scroll to bottom */}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="flex">
