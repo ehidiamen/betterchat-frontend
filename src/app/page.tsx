@@ -37,6 +37,8 @@ const Home: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const [customCharacter, setCustomCharacter] = useState<CustomCharacter | null>(null);
   const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
+  const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
+
 
   // Google Sign-In
   const signIn = async () => {
@@ -129,6 +131,9 @@ const Home: React.FC = () => {
       <h1 className="text-2xl font-bold text-center text-gray-800 mb-4">
         Better Chat {AI_CHARACTERS[character]?.emoji}
       </h1>
+      <h1 className="text-1xl text-center text-gray-800 mb-4">
+        A fun conversational AI bot. Ask me anything!
+      </h1>
 
       {!user ? (
         <div className="flex justify-center">
@@ -163,28 +168,57 @@ const Home: React.FC = () => {
           )}
 
           <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Create a Custom AI Character</h2>
-            {/* Custom AI Character Inputs */}
-<div className="grid grid-cols-3 gap-2 mt-2">
-  <input
-    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
-    placeholder="Name"
-    onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })}
-  />
-  <input
-    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
-    placeholder="Emoji"
-    onChange={(e) => setNewCharacter({ ...newCharacter, emoji: e.target.value })}
-  />
-  <input
-    className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
-    placeholder="Description"
-    onChange={(e) => setNewCharacter({ ...newCharacter, description: e.target.value })}
-  />
-</div>
-            <button onClick={saveCustomCharacter} className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg">
-              Save Custom AI
-            </button>
+            {/* Toggle Button */}
+            <p 
+              className="text-blue-500 cursor-pointer font-semibold mt-4 text-center hover:underline"
+              onClick={() => setShowCustomForm(true)} // Show form when clicked
+            >
+              Create a Custom AI Character
+            </p>
+
+             {/* Custom AI Character Form - Hidden by Default */}
+    {showCustomForm && (
+      <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+        <h2 className="text-lg font-semibold text-gray-800">Create a Custom AI Character</h2>
+        <div className="grid grid-cols-3 gap-2 mt-2">
+          <input
+            className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+            placeholder="Name"
+            onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })}
+          />
+          <input
+            className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+            placeholder="Emoji"
+            onChange={(e) => setNewCharacter({ ...newCharacter, emoji: e.target.value })}
+          />
+          <input
+            className="p-3 border-2 border-gray-400 rounded-lg text-lg font-semibold text-gray-900 placeholder-gray-600 focus:outline-none focus:border-blue-500"
+            placeholder="Description"
+            onChange={(e) => setNewCharacter({ ...newCharacter, description: e.target.value })}
+          />
+        </div>
+        
+        {/* Buttons: Save & Cancel */}
+        <div className="flex justify-between mt-3">
+          <button 
+            onClick={() => {
+              saveCustomCharacter();
+              setShowCustomForm(false); // Hide form after saving
+            }} 
+            className="w-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg"
+          >
+            Save Custom AI
+          </button>
+
+          <button 
+            onClick={() => setShowCustomForm(false)} // Hide form when Cancel is clicked
+            className="w-1/2 bg-gray-400 hover:bg-gray-500 text-white p-2 rounded-lg ml-2"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
           </div>
 
 
