@@ -37,9 +37,7 @@ const Home: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const [customCharacter, setCustomCharacter] = useState<CustomCharacter | null>(null);
   const [newCharacter, setNewCharacter] = useState<CustomCharacter>({ name: "", emoji: "", description: "" });
-  const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
-
-
+  
   // Google Sign-In
   const signIn = async () => {
     try {
@@ -170,7 +168,7 @@ const Home: React.FC = () => {
             {/* Toggle Button */}
             <p 
               className="text-blue-500 cursor-pointer font-semibold mt-4 text-center hover:underline"
-              onClick={() => setShowCustomForm(true)} // Show form when clicked
+              
             >
               Create a Custom AI Character
             </p>
