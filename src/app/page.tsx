@@ -41,11 +41,12 @@ const Home: React.FC = () => {
   const [showCustomForm, setShowCustomForm] = useState<boolean>(false); // Toggle state
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // Create a reference
   // Get the SpeechRecognition object, handling browser compatibility
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  //const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   // Define recognition variable with correct type
-  const recognition: SpeechRecognition | null = SpeechRecognition ? new SpeechRecognition() : null;
+  //const recognition: SpeechRecognition | null = SpeechRecognition ? new SpeechRecognition() : null;
 
   // Speech recognition settings
+  /*
   if (recognition) {
     recognition.continuous = false; // Stop listening after speaking
     recognition.interimResults = false; // Only finalize speech when finished
@@ -60,6 +61,8 @@ const Home: React.FC = () => {
   
     recognition.start();
   };
+  */
+  const startListening = () => {}
 
   // Google Sign
   const signIn = async () => {
@@ -108,7 +111,7 @@ const Home: React.FC = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
+/*
   useEffect(() => {
     if (recognition) {
       recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -117,6 +120,7 @@ const Home: React.FC = () => {
       };
     }
   }, []);
+  */
 
   // Save Custom AI Character
   const saveCustomCharacter = async () => {
